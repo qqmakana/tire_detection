@@ -1,17 +1,16 @@
 # hubconf.py
 import torch
 import torchvision
-from timm.models.vision_transformer import vit_base_patch16_224 as _vit_base_patch16_224 # helper function
-
-def Pretrained_vit(pretrained=False, **kwargs):
-    """Pretrained Vision Transformer model with 16x16 patches and 224x224 input resolution
-    pretrained (bool): if True, load pretrained weights
-    kwargs: other arguments for the model
-    """
-    model = _vit_base_patch16_224(**kwargs) # create the model
-    if pretrained:
-        checkpoint = 'https://github.com/qqmakana/tire_detection/blob/main/Good.ipynb' # URL of the pretrained weights
-        state_dict = torch.hub.load_state_dict_from_url(checkpoint, progress=False) # load the state dict
-        model.load_state_dict(state_dict) # set the state dict
-    return model # return the model
+def pretrainedVit(model_name='vit_b_16', pretrained=True, **kwargs):
+  # Get the pretrained weights for the model
+  pretrained_vit_weights = torchvision.models.ViT_B_16_Weights.DEFAULT
+  # Setup a ViT model instance with pretrained weights
+  pretrained_vit = torchvision.models.vit_b_16(weights=pretrained_vit_weights, **kwargs)
+  # Freeze the base parameters
+  for parameter in pretrained_vit.parameters():
+    parameter.requires_grad = False
+  # Change the classifier head
+  class_names = ['Bad_tire','Good_tire']
+  pretrained_vit.heads = nn.Linear(in_features=768, out_features=len(class_names))
+  return pretrained_vit
 
